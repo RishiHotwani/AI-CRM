@@ -23,4 +23,12 @@ public class SecurityUtils {
         }
         return orgId;
     }
+
+    public static String getCurrentUserId() {
+        return getAuthenticatedUser().getId();
+    }
+
+    public static String getCurrentUserEmail() {
+        return getAuthenticatedUser().getEmail();
+    }
 }
