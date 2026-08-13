@@ -28,7 +28,14 @@ public class DashboardService {
     private final PipelineStageRepository pipelineStageRepository;
     private final UserRepository userRepository;
 
-    public DashboardDto.DashboardStatsResponse getDashboardStats(String orgId) {
+    public DashboardDto.DashboardStatsResponse getDashboardStats(String orgId, String period) {
+        LocalDateTime startDate = switch (period != null ? period.toLowerCase() : "month") {
+            case "today" -> LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+            case "week" -> LocalDateTime.now().minusWeeks(1);
+            case "quarter" -> LocalDateTime.now().minusMonths(3);
+            default -> LocalDateTime.now().minusMonths(1);
+        };
+
         long totalLeads = leadRepository.countByOrganizationIdAndDeletedAtIsNull(orgId);
         long qualifiedLeads = leadRepository.countByOrganizationIdAndStatusAndDeletedAtIsNull(orgId, LeadStatus.QUALIFIED);
 
@@ -56,33 +63,19 @@ public class DashboardService {
         long tasksDue = taskRepository.countByOrganizationIdAndStatusNotAndDueDateBefore(orgId, TaskStatus.COMPLETED, LocalDateTime.now());
         long upcomingMeetings = meetingRepository.countByOrganizationIdAndStartTimeAfter(orgId, LocalDateTime.now());
 
-        // 1. Revenue over time
+        // 1. Revenue over time (real DB data)
         List<DashboardDto.ChartDataPoint> revenueOverTime = new ArrayList<>();
         Map<String, Double> monthlyRev = deals.stream().filter(d -> d.getStage().isWonStage())
                 .collect(Collectors.groupingBy(d -> d.getCreatedAt().getMonth().name(), Collectors.summingDouble(d -> d.getValue().doubleValue())));
 
-        if (monthlyRev.isEmpty()) {
-            revenueOverTime.add(new DashboardDto.ChartDataPoint("Jan", 12000.0, "Revenue"));
-            revenueOverTime.add(new DashboardDto.ChartDataPoint("Feb", 18500.0, "Revenue"));
-            revenueOverTime.add(new DashboardDto.ChartDataPoint("Mar", 24000.0, "Revenue"));
-            revenueOverTime.add(new DashboardDto.ChartDataPoint("Apr", 32000.0, "Revenue"));
-            revenueOverTime.add(new DashboardDto.ChartDataPoint("May", 45000.0, "Revenue"));
-        } else {
-            monthlyRev.forEach((m, v) -> revenueOverTime.add(new DashboardDto.ChartDataPoint(m, v, "Revenue")));
-        }
+        monthlyRev.forEach((m, v) -> revenueOverTime.add(new DashboardDto.ChartDataPoint(m, v, "Revenue")));
 
-        // 2. Leads by source
+        // 2. Leads by source (real DB data)
         List<Lead> leads = leadRepository.findByOrganizationIdAndDeletedAtIsNull(orgId);
         Map<String, Long> sourceCounts = leads.stream().collect(Collectors.groupingBy(l -> l.getSource().name(), Collectors.counting()));
 
         List<DashboardDto.ChartDataPoint> leadsBySource = new ArrayList<>();
         sourceCounts.forEach((src, cnt) -> leadsBySource.add(new DashboardDto.ChartDataPoint(src, cnt.doubleValue(), "Leads")));
-        if (leadsBySource.isEmpty()) {
-            leadsBySource.add(new DashboardDto.ChartDataPoint("WEBSITE", 45.0, "Leads"));
-            leadsBySource.add(new DashboardDto.ChartDataPoint("REFERRAL", 25.0, "Leads"));
-            leadsBySource.add(new DashboardDto.ChartDataPoint("LINKEDIN", 20.0, "Leads"));
-            leadsBySource.add(new DashboardDto.ChartDataPoint("ADVERTISEMENT", 10.0, "Leads"));
-        }
 
         // 3. Deal pipeline funnel
         List<DashboardDto.PipelineStageFunnel> funnel = new ArrayList<>();

@@ -19,19 +19,23 @@ export const ContactsPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [jobTitle, setJobTitle] = useState('');
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     fetchContacts();
   }, [query]);
 
   const fetchContacts = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       let url = `/contacts?page=0&size=50`;
       if (query) url += `&query=${encodeURIComponent(query)}`;
       const res = await api.get(url);
       setContacts(res.data.content || []);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to fetch contacts', e);
+      setError(e.response?.data?.message || 'Failed to fetch contacts directory.');
     } finally {
       setIsLoading(false);
     }
@@ -137,11 +141,32 @@ export const ContactsPage: React.FC = () => {
             <tbody className="divide-y divide-slate-800/60">
               {isLoading && (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-slate-500">Loading contacts...</td>
+                  <td colSpan={6} className="text-center py-8 text-slate-500">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
+                      <span>Loading contacts...</span>
+                    </div>
+                  </td>
                 </tr>
               )}
 
-              {!isLoading && contacts.map((c) => (
+              {!isLoading && error && (
+                <tr>
+                  <td colSpan={6} className="text-center py-8 text-rose-400">
+                    {error}
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading && !error && contacts.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-slate-500">
+                    No contacts found. Click "Add Contact" above to add your first contact.
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading && !error && contacts.map((c) => (
                 <tr key={c.id} className="hover:bg-slate-800/40 transition-colors">
                   <td className="p-4 font-bold text-slate-100">{c.firstName} {c.lastName}</td>
                   <td className="p-4 text-slate-400">{c.email}</td>

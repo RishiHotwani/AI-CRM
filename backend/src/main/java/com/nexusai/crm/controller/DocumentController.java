@@ -61,4 +61,11 @@ public class DocumentController {
                 .createdAt(doc.getCreatedAt())
                 .build());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDocument(@PathVariable("id") String id) {
+        String orgId = SecurityUtils.getCurrentOrgId();
+        ragService.deleteDocument(orgId, id);
+        return ResponseEntity.noContent().build();
+    }
 }

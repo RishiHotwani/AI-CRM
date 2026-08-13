@@ -101,7 +101,24 @@ export const SettingsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {teamMembers.map((m) => (
+              {isLoading && (
+                <tr>
+                  <td colSpan={4} className="text-center py-8 text-slate-500">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
+                      <span>Loading team members...</span>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading && teamMembers.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="text-center py-8 text-slate-500">No team members found.</td>
+                </tr>
+              )}
+
+              {!isLoading && teamMembers.map((m) => (
                 <tr key={m.id} className="hover:bg-slate-800/40">
                   <td className="p-3 font-semibold text-slate-100">{m.fullName}</td>
                   <td className="p-3 text-slate-400">{m.email}</td>

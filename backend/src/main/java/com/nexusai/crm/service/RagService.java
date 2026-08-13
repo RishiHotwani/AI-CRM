@@ -86,6 +86,15 @@ public class RagService {
         return documentRepository.save(doc);
     }
 
+    @Transactional
+    public void deleteDocument(String orgId, String docId) {
+        Document doc = documentRepository.findById(docId)
+                .filter(d -> d.getOrganization().getId().equals(orgId))
+                .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
+        documentChunkRepository.deleteByDocumentId(doc.getId());
+        documentRepository.delete(doc);
+    }
+
     public List<DocumentChunk> searchRelevantChunks(String orgId, String query, int topK) {
         List<DocumentChunk> allChunks = documentChunkRepository.findByOrganizationId(orgId);
         if (allChunks.isEmpty()) return Collections.emptyList();

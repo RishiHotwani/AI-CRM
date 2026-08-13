@@ -16,17 +16,21 @@ export const CalendarPage: React.FC = () => {
   const [endTime, setEndTime] = useState('');
   const [meetingLink, setMeetingLink] = useState('');
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     fetchMeetings();
   }, []);
 
   const fetchMeetings = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const res = await api.get('/meetings?page=0&size=50');
       setMeetings(res.data.content || []);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to fetch meetings', e);
+      setError(e.response?.data?.message || 'Failed to fetch calendar meetings.');
     } finally {
       setIsLoading(false);
     }
@@ -34,6 +38,10 @@ export const CalendarPage: React.FC = () => {
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (new Date(endTime) <= new Date(startTime)) {
+      alert('End time must be strictly after start time');
+      return;
+    }
     try {
       await api.post('/meetings', {
         title,
@@ -92,14 +100,23 @@ export const CalendarPage: React.FC = () => {
         <div className="lg:col-span-2 glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
           <h3 className="font-bold text-sm text-slate-200">Scheduled Events ({viewMode.toUpperCase()} VIEW)</h3>
 
-          {isLoading && <p className="text-xs text-slate-500 py-8 text-center">Loading calendar events...</p>}
+          {isLoading && (
+            <div className="flex items-center justify-center py-8 text-slate-500 gap-2 text-xs">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
+              <span>Loading calendar events...</span>
+            </div>
+          )}
 
-          {!isLoading && meetings.length === 0 && (
-            <p className="text-xs text-slate-500 py-8 text-center">No upcoming meetings scheduled.</p>
+          {!isLoading && error && (
+            <p className="text-xs text-rose-400 py-8 text-center">{error}</p>
+          )}
+
+          {!isLoading && !error && meetings.length === 0 && (
+            <p className="text-xs text-slate-500 py-8 text-center">No upcoming meetings scheduled. Click "Schedule Meeting" above to create an event.</p>
           )}
 
           <div className="space-y-3">
-            {!isLoading && meetings.map((m) => (
+            {!isLoading && !error && meetings.map((m) => (
               <div key={m.id} className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex items-start justify-between">
                 <div>
                   <h4 className="font-bold text-sm text-slate-100">{m.title}</h4>
@@ -117,7 +134,7 @@ export const CalendarPage: React.FC = () => {
                   </div>
                 </div>
                 <span className="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                  Organizer: {m.organizer?.fullName}
+                  Organizer: {m.organizer?.fullName || 'System'}
                 </span>
               </div>
             ))}

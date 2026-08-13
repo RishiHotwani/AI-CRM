@@ -14,17 +14,21 @@ export const TasksPage: React.FC = () => {
   const [priority, setPriority] = useState<TaskPriority>('MEDIUM');
   const [dueDate, setDueDate] = useState('');
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     fetchTasks();
   }, []);
 
   const fetchTasks = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const res = await api.get('/tasks?page=0&size=50');
       setTasks(res.data.content || []);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to fetch tasks', e);
+      setError(e.response?.data?.message || 'Failed to fetch task list.');
     } finally {
       setIsLoading(false);
     }
@@ -91,13 +95,22 @@ export const TasksPage: React.FC = () => {
 
       <div className="glass-card rounded-2xl border border-slate-800 p-5 space-y-4">
         <div className="space-y-2">
-          {isLoading && <p className="text-xs text-slate-500 py-8 text-center">Loading task checklist...</p>}
-
-          {!isLoading && tasks.length === 0 && (
-            <p className="text-xs text-slate-500 py-8 text-center">No active tasks created.</p>
+          {isLoading && (
+            <div className="flex items-center justify-center py-8 text-slate-500 gap-2 text-xs">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
+              <span>Loading task checklist...</span>
+            </div>
           )}
 
-          {!isLoading && tasks.map((t) => (
+          {!isLoading && error && (
+            <p className="text-xs text-rose-400 py-8 text-center">{error}</p>
+          )}
+
+          {!isLoading && !error && tasks.length === 0 && (
+            <p className="text-xs text-slate-500 py-8 text-center">No active tasks created. Click "New Task" above to create your first task.</p>
+          )}
+
+          {!isLoading && !error && tasks.map((t) => (
             <div
               key={t.id}
               className={`p-4 rounded-xl border flex items-center justify-between transition-all ${

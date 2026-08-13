@@ -13,17 +13,21 @@ export const ActivitiesPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     fetchActivities();
   }, []);
 
   const fetchActivities = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const res = await api.get('/activities?page=0&size=50');
       setActivities(res.data.content || []);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to fetch activities', e);
+      setError(e.response?.data?.message || 'Failed to fetch activity stream.');
     } finally {
       setIsLoading(false);
     }
@@ -76,14 +80,23 @@ export const ActivitiesPage: React.FC = () => {
       <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-6">
         <h3 className="font-bold text-sm text-slate-200">Recent Customer Interactions</h3>
 
-        {isLoading && <p className="text-xs text-slate-500 text-center py-8">Loading timeline...</p>}
+        {isLoading && (
+          <div className="flex items-center justify-center py-8 text-slate-500 gap-2 text-xs">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
+            <span>Loading timeline...</span>
+          </div>
+        )}
 
-        {!isLoading && activities.length === 0 && (
-          <p className="text-xs text-slate-500 text-center py-8">No activities recorded yet. Click 'Log Activity' to start.</p>
+        {!isLoading && error && (
+          <p className="text-xs text-rose-400 py-8 text-center">{error}</p>
+        )}
+
+        {!isLoading && !error && activities.length === 0 && (
+          <p className="text-xs text-slate-500 text-center py-8">No activities recorded yet. Click 'Log Activity' to start logging calls, meetings, or notes.</p>
         )}
 
         <div className="relative border-l border-slate-800 ml-4 space-y-6">
-          {!isLoading && activities.map((a) => (
+          {!isLoading && !error && activities.map((a) => (
             <div key={a.id} className="relative pl-6 group">
               <div className="absolute -left-3 top-0.5 w-6 h-6 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center shadow">
                 {getActivityIcon(a.type)}

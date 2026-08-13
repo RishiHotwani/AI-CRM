@@ -19,19 +19,23 @@ export const CompaniesPage: React.FC = () => {
   const [employeeCount, setEmployeeCount] = useState('50');
   const [annualRevenue, setAnnualRevenue] = useState('500000');
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     fetchCompanies();
   }, [query]);
 
   const fetchCompanies = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       let url = `/companies?page=0&size=50`;
       if (query) url += `&query=${encodeURIComponent(query)}`;
       const res = await api.get(url);
       setCompanies(res.data.content || []);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to fetch companies', e);
+      setError(e.response?.data?.message || 'Failed to fetch companies directory.');
     } finally {
       setIsLoading(false);
     }
@@ -122,9 +126,26 @@ export const CompaniesPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {isLoading && <p className="text-xs text-slate-500 col-span-3 text-center py-8">Loading company directory...</p>}
+        {isLoading && (
+          <div className="col-span-3 text-center py-12 text-slate-500 flex items-center justify-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
+            <span>Loading company directory...</span>
+          </div>
+        )}
 
-        {!isLoading && companies.map((c) => (
+        {!isLoading && error && (
+          <div className="col-span-3 text-center py-8 text-rose-400 glass-card p-6 rounded-2xl border border-rose-500/20">
+            {error}
+          </div>
+        )}
+
+        {!isLoading && !error && companies.length === 0 && (
+          <div className="col-span-3 text-center py-12 text-slate-500 glass-card p-6 rounded-2xl border border-slate-800">
+            No companies found. Click "Add Company" above to add your first company record.
+          </div>
+        )}
+
+        {!isLoading && !error && companies.map((c) => (
           <div key={c.id} className="glass-card p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between space-y-4">
             <div>
               <div className="flex items-start justify-between">

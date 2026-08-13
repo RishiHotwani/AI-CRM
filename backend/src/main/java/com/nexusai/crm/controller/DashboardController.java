@@ -17,8 +17,9 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     @GetMapping("/stats")
-    public ResponseEntity<DashboardDto.DashboardStatsResponse> getDashboardStats() {
+    public ResponseEntity<DashboardDto.DashboardStatsResponse> getDashboardStats(
+            @org.springframework.web.bind.annotation.RequestParam(name = "period", required = false, defaultValue = "month") String period) {
         String orgId = SecurityUtils.getCurrentOrgId();
-        return ResponseEntity.ok(dashboardService.getDashboardStats(orgId));
+        return ResponseEntity.ok(dashboardService.getDashboardStats(orgId, period));
     }
 }
