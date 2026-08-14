@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bot, User, Mail, Lock, Building, Briefcase, ArrowRight, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, Building, Briefcase, ArrowRight, AlertCircle, Target } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export const RegisterPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
@@ -12,161 +13,107 @@ export const RegisterPage: React.FC = () => {
   const [jobTitle, setJobTitle] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
   const { login } = useAuth();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
     try {
-      const res = await api.post('/auth/signup', {
-        fullName,
-        email,
-        password,
-        companyName,
-        jobTitle,
-      });
+      const res = await api.post('/auth/signup', { fullName, email, password, companyName, jobTitle });
       login(res.data);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 select-none">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
-        <div className="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-purple-500 items-center justify-center text-white shadow-xl glow-brand">
-          <Bot className="w-8 h-8" />
-        </div>
-        <h2 className="text-3xl font-extrabold tracking-tight text-slate-100">
-          Create Workspace
-        </h2>
-        <p className="text-xs text-slate-400">
-          Set up your organization and default sales pipeline in seconds.
-        </p>
+  const Field = ({ icon: Icon, label, type = 'text', value, onChange, placeholder, required = true }: any) => (
+    <div>
+      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', letterSpacing: '-0.01em' }}>
+        {label}{required && <span style={{ color: 'var(--danger)' }}> *</span>}
+      </label>
+      <div className="relative">
+        <Icon style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '14px', height: '14px', color: 'var(--text-tertiary)' }} />
+        <input
+          type={type}
+          required={required}
+          value={value}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="input-glass w-full rounded-xl"
+          style={{ paddingLeft: '36px', paddingRight: '12px', paddingTop: '10px', paddingBottom: '10px', fontSize: '13px' }}
+        />
       </div>
+    </div>
+  );
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="glass-panel py-8 px-6 shadow-2xl rounded-3xl border border-slate-800 sm:px-10">
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center p-4 py-8"
+      style={{ background: isDark ? 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(10,132,255,0.15) 0%, var(--bg-base) 60%)' : 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,122,255,0.08) 0%, #f5f5f7 60%)' }}
+    >
+      <div style={{ width: '100%', maxWidth: '420px' }}>
+        <div className="text-center mb-6">
+          <div
+            className="inline-flex w-12 h-12 rounded-2xl items-center justify-center mb-4"
+            style={{ background: 'var(--accent)', boxShadow: '0 8px 24px var(--accent-glow)' }}
+          >
+            <Target style={{ width: '22px', height: '22px', color: 'white' }} />
+          </div>
+          <h1 style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text-primary)', lineHeight: 1.1 }}>
+            Create your workspace
+          </h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '6px', letterSpacing: '-0.01em' }}>
+            Start closing deals with Clinch CRM.
+          </p>
+        </div>
+
+        <div className="glass-panel rounded-3xl p-7">
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{error}</span>
+            <div
+              className="flex items-start gap-3 rounded-xl p-3 mb-5"
+              style={{ background: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.2)' }}
+            >
+              <AlertCircle style={{ width: '14px', height: '14px', color: 'var(--danger)', flexShrink: 0, marginTop: '1px' }} />
+              <span style={{ fontSize: '12px', color: 'var(--danger)' }}>{error}</span>
             </div>
           )}
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-xs font-semibold text-slate-300">Company / Organization Name</label>
-              <div className="mt-1 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Building className="w-4 h-4" />
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
-                  placeholder="Acme Technologies Inc."
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300">Full Name</label>
-                <div className="mt-1 relative rounded-xl shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
-                    placeholder="Alex Morgan"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300">Job Title</label>
-                <div className="mt-1 relative rounded-xl shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                    <Briefcase className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="text"
-                    value={jobTitle}
-                    onChange={(e) => setJobTitle(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
-                    placeholder="VP of Sales"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300">Work Email Address</label>
-              <div className="mt-1 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
-                  placeholder="alex@acme.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300">Password (Min. 8 characters)</label>
-              <div className="mt-1 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <Field icon={Building} label="Company Name" value={companyName} onChange={setCompanyName} placeholder="Acme Technologies" />
+            <Field icon={User} label="Your Full Name" value={fullName} onChange={setFullName} placeholder="Jane Smith" />
+            <Field icon={Mail} label="Work Email" type="email" value={email} onChange={setEmail} placeholder="jane@acme.com" />
+            <Field icon={Briefcase} label="Job Title" value={jobTitle} onChange={setJobTitle} placeholder="VP of Sales" required={false} />
+            <Field icon={Lock} label="Password" type="password" value={password} onChange={setPassword} placeholder="Min. 8 characters" />
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 shadow-lg shadow-brand-500/25 transition-all disabled:opacity-50"
+              className="btn-primary w-full flex items-center justify-center gap-2"
+              style={{ marginTop: '4px', height: '42px', borderRadius: '12px', opacity: isLoading ? 0.7 : 1 }}
             >
-              {isLoading ? 'Creating Workspace...' : 'Register Workspace'}
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <div className="spinner" style={{ width: '16px', height: '16px', borderColor: 'rgba(255,255,255,0.3)', borderTopColor: 'white' }} />
+              ) : (
+                <>
+                  <span>Create Workspace</span>
+                  <ArrowRight style={{ width: '14px', height: '14px' }} />
+                </>
+              )}
             </button>
           </form>
 
-          <div className="mt-6 border-t border-slate-800 pt-4 text-center">
-            <p className="text-xs text-slate-400">
-              Already have an account?{' '}
-              <Link to="/login" className="font-semibold text-brand-400 hover:text-brand-300">
-                Sign in
-              </Link>
-            </p>
-          </div>
+          <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '12px', color: 'var(--text-tertiary)' }}>
+            Already have an account?{' '}
+            <Link to="/login" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </div>

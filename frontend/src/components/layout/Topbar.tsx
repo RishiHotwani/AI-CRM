@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, LogOut, User as UserIcon, Building, HelpCircle } from 'lucide-react';
+import { Search, Bell, LogOut, User as UserIcon, Building, Sun, Moon, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface TopbarProps {
   onOpenSearch: () => void;
@@ -8,128 +9,174 @@ interface TopbarProps {
 
 export const Topbar: React.FC<TopbarProps> = ({ onOpenSearch }) => {
   const { user, organization, logout } = useAuth();
+  const { theme, toggleTheme, isDark } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [notifCount] = useState(3); // Could be wired to real API later
 
-  // Ctrl+K / Cmd+K keyboard shortcut to open search
+  // Ctrl+K to open search
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         onOpenSearch();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
   }, [onOpenSearch]);
 
-  // Close profile menu on outside click
+  // Close profile dropdown on outside click
   useEffect(() => {
     if (!showProfileMenu) return;
     const handle = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('[data-profile-menu]')) {
-        setShowProfileMenu(false);
-      }
+      const t = e.target as HTMLElement;
+      if (!t.closest('[data-profile-menu]')) setShowProfileMenu(false);
     };
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
   }, [showProfileMenu]);
 
   return (
-    <header className="h-16 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-6 flex items-center justify-between sticky top-0 z-20">
-
-      {/* Global Search Bar — clickable, opens modal */}
+    <header
+      className="glass-topbar h-14 px-6 flex items-center justify-between sticky top-0 z-20"
+    >
+      {/* ── Search Bar ── */}
       <button
         onClick={onOpenSearch}
-        className="flex items-center gap-3 px-4 py-2 bg-slate-950/60 border border-slate-800 hover:border-brand-500/50 hover:bg-slate-950/80 rounded-xl text-slate-400 text-sm w-72 transition-all group focus:outline-none focus:border-brand-500"
-        aria-label="Open global search"
+        className="glass-search flex items-center gap-3 rounded-2xl px-4 py-2"
+        style={{ width: '100%', maxWidth: '520px', height: '38px' }}
+        aria-label="Open global search (⌘K)"
       >
-        <Search className="w-4 h-4 group-hover:text-brand-400 transition-colors flex-shrink-0" />
-        <span className="text-sm text-slate-500 group-hover:text-slate-400 transition-colors">Search leads, deals, contacts...</span>
-        <kbd className="ml-auto text-[10px] bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded-md text-slate-500 font-mono flex-shrink-0">
+        <Search style={{ width: '14px', height: '14px', color: 'var(--text-tertiary)', flexShrink: 0 }} />
+        <span style={{ fontSize: '13px', color: 'var(--text-tertiary)', flex: 1, textAlign: 'left', letterSpacing: '-0.01em' }}>
+          Search leads, deals, contacts...
+        </span>
+        <kbd
+          style={{
+            fontSize: '10px',
+            fontFamily: 'monospace',
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border-default)',
+            padding: '2px 6px',
+            borderRadius: '5px',
+            color: 'var(--text-tertiary)',
+            flexShrink: 0,
+          }}
+        >
           ⌘K
         </kbd>
       </button>
 
-      {/* Right Utilities & Profile */}
-      <div className="flex items-center gap-2">
-        {/* Notifications */}
+      {/* ── Right Controls ── */}
+      <div className="flex items-center gap-1.5 ml-4">
+
+        {/* Theme Toggle */}
         <button
-          className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors relative"
-          title="Notifications"
-          aria-label="View notifications"
+          onClick={toggleTheme}
+          className="icon-btn"
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label="Toggle theme"
         >
-          <Bell className="w-5 h-5" />
-          {notifCount > 0 && (
-            <>
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-500 rounded-full animate-ping" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-500 rounded-full" />
-            </>
-          )}
+          {isDark
+            ? <Sun style={{ width: '16px', height: '16px' }} />
+            : <Moon style={{ width: '16px', height: '16px' }} />
+          }
         </button>
 
-        <a
-          href="https://github.com/RishiHotwani/AI-CRM"
-          target="_blank"
-          rel="noreferrer"
-          className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-          title="Help & Documentation"
-        >
-          <HelpCircle className="w-5 h-5" />
-        </a>
+        {/* Notifications */}
+        <button className="icon-btn relative" title="Notifications">
+          <Bell style={{ width: '16px', height: '16px' }} />
+          <span
+            className="absolute"
+            style={{
+              top: '8px', right: '8px',
+              width: '6px', height: '6px',
+              background: 'var(--danger)',
+              borderRadius: '50%',
+              border: '1.5px solid var(--bg-base)',
+            }}
+          />
+        </button>
 
-        <div className="h-6 w-px bg-slate-800 mx-1" />
+        {/* Divider */}
+        <div style={{ width: '1px', height: '20px', background: 'var(--border-default)', margin: '0 4px' }} />
 
-        {/* User Profile Dropdown */}
+        {/* User Profile */}
         <div className="relative" data-profile-menu>
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-800 transition-colors"
-            aria-label="Open profile menu"
+            className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-all"
+            style={{ background: showProfileMenu ? 'var(--surface-hover)' : 'transparent' }}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold"
+              style={{ background: 'var(--accent)', fontSize: '12px', flexShrink: 0 }}
+            >
               {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="text-left hidden sm:block">
-              <p className="text-xs font-semibold text-slate-200 leading-tight">{user?.fullName}</p>
-              <p className="text-[10px] text-slate-400 font-mono capitalize">{user?.role?.toLowerCase()?.replace('_', ' ')}</p>
+              <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.2, letterSpacing: '-0.01em' }}>
+                {user?.fullName}
+              </p>
+              <p style={{ fontSize: '10px', color: 'var(--text-tertiary)', fontWeight: 500, textTransform: 'capitalize' }}>
+                {user?.role?.toLowerCase()?.replace('_', ' ')}
+              </p>
             </div>
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-60 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl shadow-black/60 py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-100">
-              {/* User info */}
-              <div className="px-4 py-3 border-b border-slate-800">
-                <p className="text-xs font-bold text-slate-100">{user?.fullName}</p>
-                <p className="text-[11px] text-slate-400 truncate mt-0.5">{user?.email}</p>
-                <div className="mt-2 flex items-center gap-1.5 text-[11px] text-brand-400 font-medium">
-                  <Building className="w-3 h-3" />
-                  <span className="truncate">{organization?.name}</span>
-                  <span className="ml-auto text-[10px] bg-brand-500/10 border border-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded font-mono uppercase">
+            <div
+              className="glass-panel absolute right-0 mt-2 rounded-2xl py-1.5 animate-slide-down"
+              style={{ width: '220px', zIndex: 100 }}
+            >
+              {/* Header */}
+              <div className="px-4 py-2.5" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{user?.fullName}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px' }}>
+                  <Building style={{ width: '10px', height: '10px', color: 'var(--accent)' }} />
+                  <span style={{ fontSize: '10px', color: 'var(--accent)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{organization?.name}</span>
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      fontSize: '9px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      background: 'var(--accent-muted)',
+                      color: 'var(--accent)',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                    }}
+                  >
                     {organization?.tier}
                   </span>
                 </div>
               </div>
 
-              <div className="py-1">
+              <div className="py-1 px-1.5">
                 <a
                   href="/settings"
-                  className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-all"
+                  style={{ color: 'var(--text-primary)', fontSize: '12px', fontWeight: 500 }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-hover)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                   onClick={() => setShowProfileMenu(false)}
                 >
-                  <UserIcon className="w-4 h-4 text-slate-400" />
-                  <span>Profile &amp; Settings</span>
+                  <UserIcon style={{ width: '13px', height: '13px', color: 'var(--text-tertiary)' }} />
+                  Profile &amp; Settings
                 </a>
               </div>
 
-              <div className="border-t border-slate-800 pt-1">
+              <div className="px-1.5 pb-1.5" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '6px' }}>
                 <button
                   onClick={() => { setShowProfileMenu(false); logout(); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all"
+                  style={{ color: 'var(--danger)', fontSize: '12px', fontWeight: 500, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,59,48,0.08)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span>Log out</span>
+                  <LogOut style={{ width: '13px', height: '13px' }} />
+                  Sign out
                 </button>
               </div>
             </div>

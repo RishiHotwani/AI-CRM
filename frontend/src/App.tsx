@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -27,37 +28,37 @@ const queryClient = new QueryClient();
 export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public Auth Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-            {/* Authenticated Application Routes */}
-            <Route path="/" element={<AppLayout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="leads" element={<LeadsPage />} />
-              <Route path="leads/:id" element={<LeadDetailPage />} />
-              <Route path="contacts" element={<ContactsPage />} />
-              <Route path="companies" element={<CompaniesPage />} />
-              <Route path="deals" element={<DealsPage />} />
-              <Route path="activities" element={<ActivitiesPage />} />
-              <Route path="tasks" element={<TasksPage />} />
-              <Route path="calendar" element={<CalendarPage />} />
-              <Route path="ai-assistant" element={<AiAssistantPage />} />
-              <Route path="knowledge-base" element={<KnowledgeBasePage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="audit-logs" element={<AuditLogsPage />} />
-            </Route>
+              <Route path="/" element={<AppLayout />}>
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="leads" element={<LeadsPage />} />
+                <Route path="leads/:id" element={<LeadDetailPage />} />
+                <Route path="contacts" element={<ContactsPage />} />
+                <Route path="companies" element={<CompaniesPage />} />
+                <Route path="deals" element={<DealsPage />} />
+                <Route path="activities" element={<ActivitiesPage />} />
+                <Route path="tasks" element={<TasksPage />} />
+                <Route path="calendar" element={<CalendarPage />} />
+                <Route path="ai-assistant" element={<AiAssistantPage />} />
+                <Route path="knowledge-base" element={<KnowledgeBasePage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="audit-logs" element={<AuditLogsPage />} />
+              </Route>
 
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

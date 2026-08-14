@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bot, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, AlertCircle, Target } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
   const { login } = useAuth();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
     try {
       const res = await api.post('/auth/login', { email, password });
       login(res.data);
@@ -29,86 +31,111 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 select-none">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
-        <div className="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-purple-500 items-center justify-center text-white shadow-xl glow-brand">
-          <Bot className="w-8 h-8" />
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: isDark ? 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(10,132,255,0.15) 0%, var(--bg-base) 60%)' : 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,122,255,0.08) 0%, #f5f5f7 60%)' }}
+    >
+      <div style={{ width: '100%', maxWidth: '400px' }}>
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div
+            className="inline-flex w-12 h-12 rounded-2xl items-center justify-center mb-4"
+            style={{ background: 'var(--accent)', boxShadow: '0 8px 24px var(--accent-glow)' }}
+          >
+            <Target style={{ width: '22px', height: '22px', color: 'white' }} />
+          </div>
+          <h1 style={{ fontSize: '26px', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text-primary)', lineHeight: 1.1 }}>
+            Sign in to <span style={{ color: 'var(--accent)' }}>Clinch</span>
+          </h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '6px', letterSpacing: '-0.01em' }}>
+            Close more deals, faster.
+          </p>
         </div>
-        <h2 className="text-3xl font-extrabold tracking-tight text-slate-100">
-          Sign in to <span className="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">NexusAI CRM</span>
-        </h2>
-        <p className="text-xs text-slate-400 max-w-xs mx-auto">
-          "Turn every customer interaction into your next opportunity."
-        </p>
-      </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="glass-panel py-8 px-6 shadow-2xl rounded-3xl border border-slate-800 sm:px-10">
+        {/* Card */}
+        <div className="glass-panel rounded-3xl p-8">
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{error}</span>
+            <div
+              className="flex items-start gap-3 rounded-xl p-3 mb-5"
+              style={{ background: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.2)' }}
+            >
+              <AlertCircle style={{ width: '14px', height: '14px', color: 'var(--danger)', flexShrink: 0, marginTop: '1px' }} />
+              <span style={{ fontSize: '12px', color: 'var(--danger)' }}>{error}</span>
             </div>
           )}
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300">Email address</label>
-              <div className="mt-1 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Mail className="w-4 h-4" />
-                </div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', letterSpacing: '-0.01em' }}>
+                Email address
+              </label>
+              <div className="relative">
+                <Mail style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '14px', height: '14px', color: 'var(--text-tertiary)' }} />
                 <input
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-                  placeholder="alex@acme.com"
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  className="input-glass w-full rounded-xl"
+                  style={{ paddingLeft: '36px', paddingRight: '12px', paddingTop: '10px', paddingBottom: '10px', fontSize: '13px' }}
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-xs font-semibold text-slate-300">Password</label>
-                <Link to="/forgot-password" className="text-xs text-brand-400 hover:text-brand-300">
-                  Forgot password?
+              <div className="flex items-center justify-between mb-1.5">
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '-0.01em' }}>
+                  Password
+                </label>
+                <Link to="/forgot-password" style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 500, textDecoration: 'none' }}>
+                  Forgot?
                 </Link>
               </div>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="w-4 h-4" />
-                </div>
+              <div className="relative">
+                <Lock style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '14px', height: '14px', color: 'var(--text-tertiary)' }} />
                 <input
-                  type="password"
+                  type={showPass ? 'text' : 'password'}
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  className="input-glass w-full rounded-xl"
+                  style={{ paddingLeft: '36px', paddingRight: '40px', paddingTop: '10px', paddingBottom: '10px', fontSize: '13px' }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(s => !s)}
+                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: '10px', fontWeight: 600 }}
+                >
+                  {showPass ? 'HIDE' : 'SHOW'}
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 shadow-lg shadow-brand-500/25 transition-all disabled:opacity-50"
+              className="btn-primary w-full flex items-center justify-center gap-2"
+              style={{ marginTop: '8px', height: '42px', borderRadius: '12px', opacity: isLoading ? 0.7 : 1 }}
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <div className="spinner" style={{ width: '16px', height: '16px', borderColor: 'rgba(255,255,255,0.3)', borderTopColor: 'white' }} />
+              ) : (
+                <>
+                  <span>Sign in</span>
+                  <ArrowRight style={{ width: '14px', height: '14px' }} />
+                </>
+              )}
             </button>
           </form>
 
-          <div className="mt-6 border-t border-slate-800 pt-4 text-center">
-            <p className="text-xs text-slate-400">
-              Don't have an account?{' '}
-              <Link to="/register" className="font-semibold text-brand-400 hover:text-brand-300">
-                Create Workspace
-              </Link>
-            </p>
-          </div>
+          <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '12px', color: 'var(--text-tertiary)' }}>
+            No account?{' '}
+            <Link to="/register" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
+              Create workspace
+            </Link>
+          </p>
         </div>
       </div>
     </div>
