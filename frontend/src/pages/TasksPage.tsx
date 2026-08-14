@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckSquare, Plus, AlertCircle, Clock, CheckCircle2, Trash2 } from 'lucide-react';
 import api from '../api/axios';
 import { Task, TaskPriority, TaskStatus } from '../types/crm';
+import { DateTimePicker } from '../components/common/DateTimePicker';
 
 export const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -205,12 +206,10 @@ export const TasksPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300">Due Date</label>
-                  <input
-                    type="datetime-local"
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Due Date</label>
+                  <DateTimePicker
                     value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none"
+                    onChange={setDueDate}
                   />
                 </div>
               </div>

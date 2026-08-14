@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Plus, Video, MapPin, Clock, Sparkles } from 'lucide-react';
 import api from '../api/axios';
 import { Meeting } from '../types/crm';
+import { DateTimePicker } from '../components/common/DateTimePicker';
 
 export const CalendarPage: React.FC = () => {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -36,8 +37,17 @@ export const CalendarPage: React.FC = () => {
     }
   };
 
+
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!startTime) {
+      alert('Please select a start date and time');
+      return;
+    }
+    if (!endTime) {
+      alert('Please select an end date and time');
+      return;
+    }
     if (new Date(endTime) <= new Date(startTime)) {
       alert('End time must be strictly after start time');
       return;
@@ -53,12 +63,15 @@ export const CalendarPage: React.FC = () => {
       setShowCreateModal(false);
       setTitle('');
       setDescription('');
+      setStartTime('');
+      setEndTime('');
       setMeetingLink('');
       fetchMeetings();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to schedule meeting');
     }
   };
+
 
   return (
     <div className="space-y-6">
@@ -180,25 +193,22 @@ export const CalendarPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300">Start Time *</label>
-                  <input
-                    type="datetime-local"
-                    required
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Start Date & Time *</label>
+                  <DateTimePicker
                     value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none"
+                    onChange={setStartTime}
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300">End Time *</label>
-                  <input
-                    type="datetime-local"
-                    required
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">End Date & Time *</label>
+                  <DateTimePicker
                     value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none"
+                    onChange={setEndTime}
+                    minDate={startTime ? startTime.split('T')[0] : undefined}
+                    required
                   />
                 </div>
               </div>
