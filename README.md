@@ -1,4 +1,4 @@
-# NexusAI CRM - Production AI CRM SaaS System
+# Clinch CRM - Production AI CRM SaaS System
 
 > **Tagline:** *"Turn every customer interaction into your next opportunity."*
 
