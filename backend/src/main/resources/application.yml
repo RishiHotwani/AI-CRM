@@ -1,11 +1,12 @@
 spring:
   application:
-    name: nexusai-crm
+    name: clinch-crm
   profiles:
     active: dev
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:nexusaicrm;DB_CLOSE_DELAY=-1;MODE=MySQL}
+    # File-based H2 — data persists across restarts (stored in ./data/clinchcrm)
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:file:./data/clinchcrm;DB_CLOSE_DELAY=-1;MODE=MySQL;AUTO_SERVER=TRUE}
     username: ${SPRING_DATASOURCE_USERNAME:sa}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     hikari:

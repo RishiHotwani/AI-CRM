@@ -5,6 +5,27 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
+// Field component OUTSIDE the render function — prevents re-creation on every state change
+const Field = ({ icon: Icon, label, type = 'text', value, onChange, placeholder, required = true }: any) => (
+  <div>
+    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', letterSpacing: '-0.01em' }}>
+      {label}{required && <span style={{ color: 'var(--danger)' }}> *</span>}
+    </label>
+    <div className="relative">
+      <Icon style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '14px', height: '14px', color: 'var(--text-tertiary)' }} />
+      <input
+        type={type}
+        required={required}
+        value={value}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="input-glass w-full rounded-xl"
+        style={{ paddingLeft: '36px', paddingRight: '12px', paddingTop: '10px', paddingBottom: '10px', fontSize: '13px' }}
+      />
+    </div>
+  </div>
+);
+
 export const RegisterPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -31,26 +52,6 @@ export const RegisterPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  const Field = ({ icon: Icon, label, type = 'text', value, onChange, placeholder, required = true }: any) => (
-    <div>
-      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', letterSpacing: '-0.01em' }}>
-        {label}{required && <span style={{ color: 'var(--danger)' }}> *</span>}
-      </label>
-      <div className="relative">
-        <Icon style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '14px', height: '14px', color: 'var(--text-tertiary)' }} />
-        <input
-          type={type}
-          required={required}
-          value={value}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="input-glass w-full rounded-xl"
-          style={{ paddingLeft: '36px', paddingRight: '12px', paddingTop: '10px', paddingBottom: '10px', fontSize: '13px' }}
-        />
-      </div>
-    </div>
-  );
 
   return (
     <div

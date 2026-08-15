@@ -59,3 +59,9 @@ desktop.ini
 tmp/
 temp/
 *.tmp
+
+# H2 Database Files (local persistence)
+backend/data/
+*.db
+*.mv.db
+*.trace.db
