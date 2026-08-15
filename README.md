@@ -2,7 +2,7 @@
 
 > **Tagline:** *"Turn every customer interaction into your next opportunity."*
 
-NexusAI CRM is a full-stack, multi-tenant Customer Relationship Management (CRM) application built with **Java 21, Spring Boot 3.2, MySQL 8.0, Flyway, Redis, React 18, TypeScript, Vite**, and **Tailwind CSS**.
+Clinch CRM is a full-stack, multi-tenant Customer Relationship Management (CRM) application built with **Java 21, Spring Boot 3.2, MySQL 8.0, Flyway, Redis, React 18, TypeScript, Vite**, and **Tailwind CSS**.
 
 ---
 
