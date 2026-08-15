@@ -65,3 +65,7 @@ backend/data/
 *.db
 *.mv.db
 *.trace.db
+
+# Tunnel binary
+cloudflared.exe
+
