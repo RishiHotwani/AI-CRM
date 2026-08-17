@@ -2,30 +2,38 @@ spring:
   application:
     name: clinch-crm
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
   datasource:
-    # File-based H2 — data persists across restarts (stored in ./data/clinchcrm)
+    # LOCAL: H2 file-based (persists across restarts)
+    # PRODUCTION: Set SPRING_DATASOURCE_URL to your PostgreSQL/MySQL URL from Render/Railway
     url: ${SPRING_DATASOURCE_URL:jdbc:h2:file:./data/clinchcrm;DB_CLOSE_DELAY=-1;MODE=MySQL;AUTO_SERVER=TRUE}
     username: ${SPRING_DATASOURCE_USERNAME:sa}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     hikari:
-      maximum-pool-size: 15
-      minimum-idle: 5
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
   h2:
     console:
-      enabled: true
+      enabled: ${H2_CONSOLE_ENABLED:true}
       path: /h2-console
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    # Auto-detect dialect from the datasource URL
+    database-platform: ${JPA_PLATFORM:org.hibernate.dialect.H2Dialect}
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${DDL_AUTO:update}
     show-sql: false
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: UTC
 
   flyway:
     enabled: false
@@ -41,7 +49,7 @@ spring:
       max-request-size: 10MB
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
   error:
     include-message: always
     include-binding-errors: always
@@ -49,8 +57,8 @@ server:
 app:
   jwt:
     secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
-    access-token-expiration-ms: 900000
-    refresh-token-expiration-ms: 604800000
+    access-token-expiration-ms: ${JWT_ACCESS_EXPIRY:900000}
+    refresh-token-expiration-ms: ${JWT_REFRESH_EXPIRY:604800000}
 
   ai:
     api-key: ${OPENAI_API_KEY:demo_key}
